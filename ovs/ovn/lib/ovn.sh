@@ -83,3 +83,8 @@ ovs-add-port-dhcp() {
     ip netns exec $port-ns ip link set $port up
     ip netns exec $port-ns dhclient $port
 }
+
+ovs-del-port-dhcp() {
+    port=$1
+    ip netns del $port-ns
+}
