@@ -41,6 +41,9 @@ cleanup() {
     ovs-vsctl --if-exists del-port br-int lport7
 
     ovn-nbctl --if-exists ls-del sw0
+    ip netns delete lport1-ns
+    ip netns delete lport2-ns
+    ip netns delete lport3-ns
 }
 
 echo "create a logical switch which has two logical ports:"
