@@ -40,7 +40,7 @@ cleanup() {
     ovs-vsctl --if-exists del-port br-int lport6
     ovs-vsctl --if-exists del-port br-int lport7
 
-    ovs-nbctl --if-exists ls-del sw0
+    ovn-nbctl --if-exists ls-del sw0
 }
 
 echo "create a logical switch which has two logical ports:"
