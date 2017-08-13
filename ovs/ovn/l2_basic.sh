@@ -48,15 +48,15 @@ cleanup() {
 
 echo "create a logical switch which has two logical ports:"
 ls-create sw0
-ls-add-port sw0 sw0-port1 00:00:00:00:00:01
-ls-add-port sw0 sw0-port2 00:00:00:00:00:02
+ls-add-port-base sw0 sw0-port1 00:00:00:00:00:01
+ls-add-port-base sw0 sw0-port2 00:00:00:00:00:02
 
 echo "overview of the logical topology:"
 ovn-nbctl show
 
 echo "add ovs ports and associates them to OVN logical ports:"
-ovs-add-port br-int lport1 sw0-port1
-ovs-add-port br-int lport2 sw0-port2
+ovs-add-port-base br-int lport1 sw0-port1
+ovs-add-port-base br-int lport2 sw0-port2
 
 echo "show southbound ports states:"
 ovn-sbctl show
@@ -77,8 +77,8 @@ echo "Trace a broadcast packet from sw0-port1.  The packet arrives from port 1 a
 ovs-appctl ofproto/trace br-int in_port=1,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff -generate
 
 echo "Add another port"
-ls-add-port sw0 sw0-port3 00:00:00:00:00:02
-ovs-add-port br-int lport3 sw0-port3
+ls-add-port-base sw0 sw0-port3 00:00:00:00:00:02
+ovs-add-port-base br-int lport3 sw0-port3
 echo "Trace broadcast now, it should be ouput on both port 2 and 3."
 ovs-appctl ofproto/trace br-int in_port=1,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff -generate
 
