@@ -1,0 +1,496 @@
+root@m11-lab:/home/m11/m11-lab/ops/ovs/ovn# ./l2_network.sh 
+---------------------------Show-ovn-nbctl-------------------------------
+    switch b2a00eb0-2b90-4899-be8e-f69b8a348a5f (provnet1-2)
+        port provnet1-2-port1
+            addresses: ["00:00:00:00:00:02"]
+        port provnet1-2-physnet1
+            addresses: ["unknown"]
+    switch 5c054da8-8e23-4bef-a2a1-8b371bb30e9c (provnet1-1)
+        port provnet1-1-physnet1
+            addresses: ["unknown"]
+        port provnet1-1-port1
+            addresses: ["00:00:00:00:00:01"]
+    switch c164a735-db46-4054-9f18-fab1892290b5 (provnet1-4)
+        port provnet1-4-port1
+            addresses: ["00:00:00:00:00:04"]
+        port provnet1-4-physnet1
+            addresses: ["unknown"]
+    switch 90252f53-90e7-4f27-98dc-f946498af372 (provnet1-3)
+        port provnet1-3-port1
+            addresses: ["00:00:00:00:00:03"]
+        port provnet1-3-physnet1
+            addresses: ["unknown"]
+---------------------------Show-ovn-sbctl-------------------------------
+Chassis "fe53b95a-536b-4ddf-bfdc-0142b534349a"
+    hostname: "m11-lab"
+    Encap vxlan
+        ip: "192.168.99.173"
+        options: {csum="true"}
+    Port_Binding "provnet1-1-port1"
+    Port_Binding "provnet1-2-port1"
+Chassis fakechassis
+    Encap vxlan
+        ip: "127.0.0.1"
+        options: {csum="true"}
+    Port_Binding "provnet1-3-port1"
+    Port_Binding "provnet1-4-port1"
+---------------------------Show-ovs-vsctl-------------------------------
+fb856e82-9d19-44a8-ab18-46994ac25737
+    Bridge "br-eth1"
+        Port "br-eth1"
+            Interface "br-eth1"
+                type: internal
+        Port "patch-provnet1-1-physnet1-to-br-int"
+            Interface "patch-provnet1-1-physnet1-to-br-int"
+                type: patch
+                options: {peer="patch-br-int-to-provnet1-1-physnet1"}
+        Port "patch-provnet1-2-physnet1-to-br-int"
+            Interface "patch-provnet1-2-physnet1-to-br-int"
+                type: patch
+                options: {peer="patch-br-int-to-provnet1-2-physnet1"}
+    Bridge br-int
+        fail_mode: secure
+        Port "patch-br-int-to-provnet1-1-physnet1"
+            Interface "patch-br-int-to-provnet1-1-physnet1"
+                type: patch
+                options: {peer="patch-provnet1-1-physnet1-to-br-int"}
+        Port br-int
+            Interface br-int
+                type: internal
+        Port "ovn-fakech-0"
+            Interface "ovn-fakech-0"
+                type: vxlan
+                options: {csum="true", key=flow, remote_ip="127.0.0.1"}
+        Port "lport2"
+            Interface "lport2"
+                type: internal
+        Port "patch-br-int-to-provnet1-2-physnet1"
+            Interface "patch-br-int-to-provnet1-2-physnet1"
+                type: patch
+                options: {peer="patch-provnet1-2-physnet1-to-br-int"}
+        Port "lport1"
+            Interface "lport1"
+                type: internal
+    ovs_version: "2.7.0"
+---------------------------dump-ports-desc-------------------------
+lport2-ns
+lport1-ns
+OFPST_PORT_DESC reply (xid=0x2):
+ 17(patch-provnet1-): addr:ee:62:06:70:82:44
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 18(patch-provnet1-): addr:9e:ff:7d:5f:bb:f4
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br-eth1): addr:aa:2b:95:b3:86:45
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+OFPST_PORT_DESC reply (xid=0x2):
+ 45(ovn-fakech-0): addr:82:ff:c2:b4:7b:89
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 46(lport1): addr:00:00:00:00:06:00
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+ 47(patch-br-int-to): addr:fe:21:c9:ed:84:05
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 48(lport2): addr:00:00:00:00:06:00
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+ 49(patch-br-int-to): addr:ca:f8:cf:8f:81:94
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br-int): addr:e2:dd:f5:c0:5d:4f
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+---------------------------Start-TEST-------------------------------
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+Flow: in_port=46,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
+
+bridge("br-int")
+----------------
+ 0. in_port=46, priority 100
+    set_field:0x1->reg13
+    set_field:0x3->reg11
+    set_field:0x2->reg12
+    set_field:0x26->metadata
+    set_field:0x1->reg14
+    resubmit(,16)
+16. reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:01, priority 50, cookie 0x94189673
+    resubmit(,17)
+17. metadata=0x26, priority 0, cookie 0x93fdf6eb
+    resubmit(,18)
+18. metadata=0x26, priority 0, cookie 0x4a282756
+    resubmit(,19)
+19. metadata=0x26, priority 0, cookie 0xa9743d98
+    resubmit(,20)
+20. metadata=0x26, priority 0, cookie 0x515da4ad
+    resubmit(,21)
+21. metadata=0x26, priority 0, cookie 0xd6d9bd2e
+    resubmit(,22)
+22. metadata=0x26, priority 0, cookie 0xcd60eca
+    resubmit(,23)
+23. metadata=0x26, priority 0, cookie 0xb4dc8145
+    resubmit(,24)
+24. metadata=0x26, priority 0, cookie 0xdae3480
+    resubmit(,25)
+25. metadata=0x26, priority 0, cookie 0xd3ab263a
+    resubmit(,26)
+26. metadata=0x26, priority 0, cookie 0xae5a3877
+    resubmit(,27)
+27. metadata=0x26, priority 0, cookie 0x6395b9ee
+    resubmit(,28)
+28. metadata=0x26, priority 0, cookie 0xfec413c1
+    resubmit(,29)
+29. metadata=0x26, priority 0, cookie 0x5d4378ab
+    set_field:0xfffe->reg15
+    resubmit(,32)
+32. priority 0
+    resubmit(,33)
+33. reg15=0xfffe,metadata=0x26, priority 100
+    set_field:0x4->reg13
+    set_field:0x2->reg15
+    resubmit(,34)
+    34. priority 0
+            set_field:0->reg0
+            set_field:0->reg1
+            set_field:0->reg2
+            set_field:0->reg3
+            set_field:0->reg4
+            set_field:0->reg5
+            set_field:0->reg6
+            set_field:0->reg7
+            set_field:0->reg8
+            set_field:0->reg9
+            resubmit(,48)
+        48. metadata=0x26, priority 0, cookie 0xe19ec3f2
+            resubmit(,49)
+        49. metadata=0x26, priority 0, cookie 0xd20a4cbf
+            resubmit(,50)
+        50. metadata=0x26, priority 0, cookie 0xf0fc932e
+            resubmit(,51)
+        51. metadata=0x26, priority 0, cookie 0xeaa15381
+            resubmit(,52)
+        52. metadata=0x26, priority 0, cookie 0xc080ac1a
+            resubmit(,53)
+        53. metadata=0x26, priority 0, cookie 0x7b23cb17
+            resubmit(,54)
+        54. metadata=0x26, priority 0, cookie 0xafe62373
+            resubmit(,55)
+        55. metadata=0x26, priority 0, cookie 0xf852c742
+            resubmit(,56)
+        56. reg15=0x2,metadata=0x26, priority 50, cookie 0x20c06f86
+            resubmit(,64)
+        64. priority 0
+            resubmit(,65)
+        65. reg15=0x2,metadata=0x26, priority 100
+            output:47
+
+        bridge("br-eth1")
+        -----------------
+         0. priority 0
+            NORMAL
+             -> forwarding to learned port
+
+        bridge("br-int")
+        ----------------
+         0. in_port=49,vlan_tci=0x0000/0x1000, priority 100
+            set_field:0x8->reg13
+            set_field:0x6->reg11
+            set_field:0x7->reg12
+            set_field:0x27->metadata
+            set_field:0x2->reg14
+            resubmit(,16)
+        16. reg14=0x2,metadata=0x27, priority 50, cookie 0xd56b99ef
+            resubmit(,17)
+        17. metadata=0x27, priority 0, cookie 0xac3ae494
+            resubmit(,18)
+        18. metadata=0x27, priority 0, cookie 0xaab2c1ca
+            resubmit(,19)
+        19. metadata=0x27, priority 0, cookie 0xe9f24dcd
+            resubmit(,20)
+        20. metadata=0x27, priority 0, cookie 0xf3c4d058
+            resubmit(,21)
+        21. metadata=0x27, priority 0, cookie 0x952c6a20
+            resubmit(,22)
+        22. metadata=0x27, priority 0, cookie 0x505946d9
+            resubmit(,23)
+        23. metadata=0x27, priority 0, cookie 0xda3f1299
+            resubmit(,24)
+        24. metadata=0x27, priority 0, cookie 0x242427f4
+            resubmit(,25)
+        25. metadata=0x27, priority 0, cookie 0x37df56a5
+            resubmit(,26)
+        26. reg14=0x2,metadata=0x27, priority 100, cookie 0xee8731c8
+            resubmit(,27)
+        27. metadata=0x27, priority 0, cookie 0xedc7fc3a
+            resubmit(,28)
+        28. metadata=0x27, priority 0, cookie 0xf13c9f80
+            resubmit(,29)
+        29. metadata=0x27,dl_dst=00:00:00:00:00:02, priority 50, cookie 0x7fc98a2b
+            set_field:0x1->reg15
+            resubmit(,32)
+        32. priority 0
+            resubmit(,33)
+        33. reg15=0x1,metadata=0x27, priority 100
+            set_field:0x5->reg13
+            set_field:0x6->reg11
+            set_field:0x7->reg12
+            resubmit(,34)
+        34. priority 0
+            set_field:0->reg0
+            set_field:0->reg1
+            set_field:0->reg2
+            set_field:0->reg3
+            set_field:0->reg4
+            set_field:0->reg5
+            set_field:0->reg6
+            set_field:0->reg7
+            set_field:0->reg8
+            set_field:0->reg9
+            resubmit(,48)
+        48. metadata=0x27, priority 0, cookie 0x6a5c8556
+            resubmit(,49)
+        49. metadata=0x27, priority 0, cookie 0x824cf7ff
+            resubmit(,50)
+        50. metadata=0x27, priority 0, cookie 0x5c6a425e
+            resubmit(,51)
+        51. metadata=0x27, priority 0, cookie 0x2389c66b
+            resubmit(,52)
+        52. metadata=0x27, priority 0, cookie 0x19ec7805
+            resubmit(,53)
+        53. metadata=0x27, priority 0, cookie 0xb6fc53d5
+            resubmit(,54)
+        54. metadata=0x27, priority 0, cookie 0x83acc06c
+            resubmit(,55)
+        55. metadata=0x27, priority 0, cookie 0xd7a81eae
+            resubmit(,56)
+        56. reg15=0x1,metadata=0x27,dl_dst=00:00:00:00:00:02, priority 50, cookie 0xd3ce43f3
+            resubmit(,64)
+        64. priority 0
+            resubmit(,65)
+        65. reg15=0x1,metadata=0x27, priority 100
+            output:48
+    set_field:0xfffe->reg15
+
+Final flow: reg11=0x3,reg12=0x2,reg13=0x4,reg14=0x1,reg15=0xfffe,metadata=0x26,in_port=46,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
+Megaflow: recirc_id=0,in_port=46,vlan_tci=0x0000/0x1fff,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
+Datapath actions: 5
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+Flow: in_port=17,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:03,dl_type=0x0000
+
+bridge("br-int")
+----------------
+ 0. No match.
+    drop
+
+Final flow: unchanged
+Megaflow: recirc_id=0,in_port=17,dl_type=0x0000
+Datapath actions: drop
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+Flow: in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,dl_type=0x0000
+
+bridge("br-int")
+----------------
+ 0. No match.
+    drop
+
+Final flow: unchanged
+Megaflow: recirc_id=0,in_port=2,dl_type=0x0000
+Datapath actions: drop
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+Flow: in_port=LOCAL,vlan_tci=0x0000,dl_src=00:00:00:00:00:03,dl_dst=ff:ff:ff:ff:ff:ff,dl_type=0x0000
+
+bridge("br-eth1")
+-----------------
+ 0. priority 0
+    NORMAL
+     -> learned that 00:00:00:00:00:03 is on port br-eth1 in VLAN 0
+     -> no learned MAC for destination, flooding
+
+    bridge("br-int")
+    ----------------
+         0. in_port=47,vlan_tci=0x0000/0x1000, priority 100
+            set_field:0x4->reg13
+            set_field:0x3->reg11
+            set_field:0x2->reg12
+            set_field:0x26->metadata
+            set_field:0x2->reg14
+            resubmit(,16)
+        16. reg14=0x2,metadata=0x26, priority 50, cookie 0x5ab003b2
+            resubmit(,17)
+        17. metadata=0x26, priority 0, cookie 0x93fdf6eb
+            resubmit(,18)
+        18. metadata=0x26, priority 0, cookie 0x4a282756
+            resubmit(,19)
+        19. metadata=0x26, priority 0, cookie 0xa9743d98
+            resubmit(,20)
+        20. metadata=0x26, priority 0, cookie 0x515da4ad
+            resubmit(,21)
+        21. metadata=0x26, priority 0, cookie 0xd6d9bd2e
+            resubmit(,22)
+        22. metadata=0x26, priority 0, cookie 0xcd60eca
+            resubmit(,23)
+        23. metadata=0x26, priority 0, cookie 0xb4dc8145
+            resubmit(,24)
+        24. metadata=0x26, priority 0, cookie 0xdae3480
+            resubmit(,25)
+        25. metadata=0x26, priority 0, cookie 0xd3ab263a
+            resubmit(,26)
+        26. reg14=0x2,metadata=0x26, priority 100, cookie 0x161732a9
+            resubmit(,27)
+        27. metadata=0x26, priority 0, cookie 0x6395b9ee
+            resubmit(,28)
+        28. metadata=0x26, priority 0, cookie 0xfec413c1
+            resubmit(,29)
+        29. metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x465020a0
+            set_field:0xffff->reg15
+            resubmit(,32)
+        32. priority 0
+            resubmit(,33)
+        33. reg15=0xffff,metadata=0x26, priority 100
+            set_field:0x4->reg13
+            set_field:0x2->reg15
+            resubmit(,34)
+            34. reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x26, priority 100
+                    drop
+            set_field:0x1->reg13
+            set_field:0x1->reg15
+            resubmit(,34)
+            34. priority 0
+                    set_field:0->reg0
+                    set_field:0->reg1
+                    set_field:0->reg2
+                    set_field:0->reg3
+                    set_field:0->reg4
+                    set_field:0->reg5
+                    set_field:0->reg6
+                    set_field:0->reg7
+                    set_field:0->reg8
+                    set_field:0->reg9
+                    resubmit(,48)
+                48. metadata=0x26, priority 0, cookie 0xe19ec3f2
+                    resubmit(,49)
+                49. metadata=0x26, priority 0, cookie 0xd20a4cbf
+                    resubmit(,50)
+                50. metadata=0x26, priority 0, cookie 0xf0fc932e
+                    resubmit(,51)
+                51. metadata=0x26, priority 0, cookie 0xeaa15381
+                    resubmit(,52)
+                52. metadata=0x26, priority 0, cookie 0xc080ac1a
+                    resubmit(,53)
+                53. metadata=0x26, priority 0, cookie 0x7b23cb17
+                    resubmit(,54)
+                54. metadata=0x26, priority 0, cookie 0xafe62373
+                    resubmit(,55)
+                55. metadata=0x26, priority 0, cookie 0xf852c742
+                    resubmit(,56)
+                56. metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x37a09910
+                    resubmit(,64)
+                64. priority 0
+                    resubmit(,65)
+                65. reg15=0x1,metadata=0x26, priority 100
+                    output:46
+            set_field:0xffff->reg15
+
+bridge("br-int")
+----------------
+ 0. in_port=49,vlan_tci=0x0000/0x1000, priority 100
+    set_field:0x8->reg13
+    set_field:0x6->reg11
+    set_field:0x7->reg12
+    set_field:0x27->metadata
+    set_field:0x2->reg14
+    resubmit(,16)
+16. reg14=0x2,metadata=0x27, priority 50, cookie 0xd56b99ef
+    resubmit(,17)
+17. metadata=0x27, priority 0, cookie 0xac3ae494
+    resubmit(,18)
+18. metadata=0x27, priority 0, cookie 0xaab2c1ca
+    resubmit(,19)
+19. metadata=0x27, priority 0, cookie 0xe9f24dcd
+    resubmit(,20)
+20. metadata=0x27, priority 0, cookie 0xf3c4d058
+    resubmit(,21)
+21. metadata=0x27, priority 0, cookie 0x952c6a20
+    resubmit(,22)
+22. metadata=0x27, priority 0, cookie 0x505946d9
+    resubmit(,23)
+23. metadata=0x27, priority 0, cookie 0xda3f1299
+    resubmit(,24)
+24. metadata=0x27, priority 0, cookie 0x242427f4
+    resubmit(,25)
+25. metadata=0x27, priority 0, cookie 0x37df56a5
+    resubmit(,26)
+26. reg14=0x2,metadata=0x27, priority 100, cookie 0xee8731c8
+    resubmit(,27)
+27. metadata=0x27, priority 0, cookie 0xedc7fc3a
+    resubmit(,28)
+28. metadata=0x27, priority 0, cookie 0xf13c9f80
+    resubmit(,29)
+29. metadata=0x27,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x25c54723
+    set_field:0xffff->reg15
+    resubmit(,32)
+32. priority 0
+    resubmit(,33)
+33. reg15=0xffff,metadata=0x27, priority 100
+    set_field:0x8->reg13
+    set_field:0x2->reg15
+    resubmit(,34)
+    34. reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x27, priority 100
+            drop
+    set_field:0x5->reg13
+    set_field:0x1->reg15
+    resubmit(,34)
+    34. priority 0
+            set_field:0->reg0
+            set_field:0->reg1
+            set_field:0->reg2
+            set_field:0->reg3
+            set_field:0->reg4
+            set_field:0->reg5
+            set_field:0->reg6
+            set_field:0->reg7
+            set_field:0->reg8
+            set_field:0->reg9
+            resubmit(,48)
+        48. metadata=0x27, priority 0, cookie 0x6a5c8556
+            resubmit(,49)
+        49. metadata=0x27, priority 0, cookie 0x824cf7ff
+            resubmit(,50)
+        50. metadata=0x27, priority 0, cookie 0x5c6a425e
+            resubmit(,51)
+        51. metadata=0x27, priority 0, cookie 0x2389c66b
+            resubmit(,52)
+        52. metadata=0x27, priority 0, cookie 0x19ec7805
+            resubmit(,53)
+        53. metadata=0x27, priority 0, cookie 0xb6fc53d5
+            resubmit(,54)
+        54. metadata=0x27, priority 0, cookie 0x83acc06c
+            resubmit(,55)
+        55. metadata=0x27, priority 0, cookie 0xd7a81eae
+            resubmit(,56)
+        56. metadata=0x27,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0xd4440ef2
+            resubmit(,64)
+        64. priority 0
+            resubmit(,65)
+        65. reg15=0x1,metadata=0x27, priority 100
+            output:48
+    set_field:0xffff->reg15
+
+Final flow: unchanged
+Megaflow: recirc_id=0,in_port=LOCAL,vlan_tci=0x0000/0x1fff,dl_src=00:00:00:00:00:03,dl_dst=ff:ff:ff:ff:ff:ff,dl_type=0x0000
+Datapath actions: 4,5
+++++++++++++++++++++++++++++++++++++++++++++++++++++
+---------------------------Complete-TEST&Cleanup-------------------------------
+root@m11-lab:/home/m11/m11-lab/ops/ovs/ovn# 
