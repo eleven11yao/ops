@@ -94,13 +94,13 @@ ovs-add-port-base() {
     fi
 
     pscount=$(ovn-nbctl lsp-get-port-security $lport | wc -l)
-    if [ $pscount = 2 ]; then
+    if [ $pscount = 1 ]; then
         mac=$(ovn-nbctl lsp-get-port-security $lport | head -n 1)
-        cidr=$(ovn-nbctl lsp-get-port-security $lport | tail -n 1)
+        #cidr=$(ovn-nbctl lsp-get-port-security $lport | tail -n 1)
         ip link set $port netns $port-ns
         # ip netns exec $port-ns ip link set dev $port name eth0
         ip netns exec $port-ns ip link set $port address $mac
-        ip netns exec $port-ns ip addr add $cidr dev $port
+        #ip netns exec $port-ns ip addr add $cidr dev $port
         ip netns exec $port-ns ip link set $port up
     fi
 }
