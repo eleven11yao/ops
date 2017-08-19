@@ -2,6 +2,7 @@
 # build, install and start ovn
 
 download-ovs() {
+  apt-get -y install curl
   curl -o openvswitch-2.7.0.tar.gz http://openvswitch.org/releases/openvswitch-2.7.0.tar.gz
   tar zxvf openvswitch-2.7.0.tar.gz
   cd openvswitch-2.7.0
