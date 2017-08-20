@@ -1,25 +1,25 @@
 root@m11-lab:/home/m11/m11-lab/ops/ovs/ovn# ./l2_network.sh 
 ---------------------------Show-ovn-nbctl-------------------------------
-    switch b2a00eb0-2b90-4899-be8e-f69b8a348a5f (provnet1-2)
-        port provnet1-2-port1
-            addresses: ["00:00:00:00:00:02"]
+    switch ca56df28-ab5b-4c1e-b352-4d3134f47b60 (provnet1-2)
         port provnet1-2-physnet1
             addresses: ["unknown"]
-    switch 5c054da8-8e23-4bef-a2a1-8b371bb30e9c (provnet1-1)
-        port provnet1-1-physnet1
-            addresses: ["unknown"]
-        port provnet1-1-port1
-            addresses: ["00:00:00:00:00:01"]
-    switch c164a735-db46-4054-9f18-fab1892290b5 (provnet1-4)
+        port provnet1-2-port1
+            addresses: ["00:00:00:00:00:02"]
+    switch eda643a4-9273-4102-b0cb-e66ed121ad8b (provnet1-4)
         port provnet1-4-port1
             addresses: ["00:00:00:00:00:04"]
         port provnet1-4-physnet1
             addresses: ["unknown"]
-    switch 90252f53-90e7-4f27-98dc-f946498af372 (provnet1-3)
-        port provnet1-3-port1
-            addresses: ["00:00:00:00:00:03"]
+    switch 61d88579-81e0-46ef-bf88-e09d843e5c43 (provnet1-1)
+        port provnet1-1-physnet1
+            addresses: ["unknown"]
+        port provnet1-1-port1
+            addresses: ["00:00:00:00:00:01"]
+    switch 27941106-55a1-4e3c-81a8-d56bd7b0c543 (provnet1-3)
         port provnet1-3-physnet1
             addresses: ["unknown"]
+        port provnet1-3-port1
+            addresses: ["00:00:00:00:00:03"]
 ---------------------------Show-ovn-sbctl-------------------------------
 Chassis "fe53b95a-536b-4ddf-bfdc-0142b534349a"
     hostname: "m11-lab"
@@ -37,50 +37,244 @@ Chassis fakechassis
 ---------------------------Show-ovs-vsctl-------------------------------
 fb856e82-9d19-44a8-ab18-46994ac25737
     Bridge "br-eth1"
-        Port "br-eth1"
-            Interface "br-eth1"
-                type: internal
         Port "patch-provnet1-1-physnet1-to-br-int"
             Interface "patch-provnet1-1-physnet1-to-br-int"
                 type: patch
                 options: {peer="patch-br-int-to-provnet1-1-physnet1"}
+        Port "br-eth1"
+            Interface "br-eth1"
+                type: internal
         Port "patch-provnet1-2-physnet1-to-br-int"
             Interface "patch-provnet1-2-physnet1-to-br-int"
                 type: patch
                 options: {peer="patch-br-int-to-provnet1-2-physnet1"}
     Bridge br-int
         fail_mode: secure
-        Port "patch-br-int-to-provnet1-1-physnet1"
-            Interface "patch-br-int-to-provnet1-1-physnet1"
-                type: patch
-                options: {peer="patch-provnet1-1-physnet1-to-br-int"}
         Port br-int
             Interface br-int
-                type: internal
-        Port "ovn-fakech-0"
-            Interface "ovn-fakech-0"
-                type: vxlan
-                options: {csum="true", key=flow, remote_ip="127.0.0.1"}
-        Port "lport2"
-            Interface "lport2"
                 type: internal
         Port "patch-br-int-to-provnet1-2-physnet1"
             Interface "patch-br-int-to-provnet1-2-physnet1"
                 type: patch
                 options: {peer="patch-provnet1-2-physnet1-to-br-int"}
+        Port "ovn-fakech-0"
+            Interface "ovn-fakech-0"
+                type: vxlan
+                options: {csum="true", key=flow, remote_ip="127.0.0.1"}
         Port "lport1"
             Interface "lport1"
                 type: internal
+        Port "lport2"
+            Interface "lport2"
+                type: internal
+        Port "patch-br-int-to-provnet1-1-physnet1"
+            Interface "patch-br-int-to-provnet1-1-physnet1"
+                type: patch
+                options: {peer="patch-provnet1-1-physnet1-to-br-int"}
     ovs_version: "2.7.0"
----------------------------dump-ports-desc-------------------------
+---------------------------dump-netns-desc-------------------------
 lport2-ns
 lport1-ns
-OFPST_PORT_DESC reply (xid=0x2):
- 17(patch-provnet1-): addr:ee:62:06:70:82:44
+---------------------------dump-ports-desc-------------------------
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: enp0s3: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 08:00:27:4e:72:41 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.99.173/24 brd 192.168.99.255 scope global dynamic enp0s3
+       valid_lft 40315sec preferred_lft 40315sec
+    inet6 fe80::f53a:6cca:d672:8d6d/64 scope link 
+       valid_lft forever preferred_lft forever
+3: ovs-system: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether c2:9b:d9:ba:2f:47 brd ff:ff:ff:ff:ff:ff
+4: br-int: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether e2:dd:f5:c0:5d:4f brd ff:ff:ff:ff:ff:ff
+5: br-eth1: <BROADCAST,MULTICAST> mtu 1500 qdisc noop state DOWN group default qlen 1000
+    link/ether aa:2b:95:b3:86:45 brd ff:ff:ff:ff:ff:ff
+18: vxlan_sys_4789: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 65485 qdisc noqueue master ovs-system state UNKNOWN group default qlen 1000
+    link/ether 9a:f7:e4:d3:9a:e0 brd ff:ff:ff:ff:ff:ff
+---------------------------ovn-sbctl lflow-list-------------------------
+Datapath: "provnet1-2" (69d154e5-8f77-43c7-828a-a08f913beae8)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-2-physnet1"), action=(next;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-2-port1" && eth.src == {00:00:00:00:00:02}), action=(next;)
+  table=1 (ls_in_port_sec_ip  ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-2-port1" && eth.src == 00:00:00:00:00:02 && arp.sha == 00:00:00:00:00:02), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-2-port1" && eth.src == 00:00:00:00:00:02 && ip6 && nd && ((nd.sll == 00:00:00:00:00:00 || nd.sll == 00:00:00:00:00:02) || ((nd.tll == 00:00:00:00:00:00 || nd.tll == 00:00:00:00:00:02)))), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=80   , match=(inport == "provnet1-2-port1" && (arp || nd)), action=(drop;)
+  table=2 (ls_in_port_sec_nd  ), priority=0    , match=(1), action=(next;)
+  table=3 (ls_in_pre_acl      ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_in_pre_lb       ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_in_pre_stateful ), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=5 (ls_in_pre_stateful ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_in_acl          ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_in_qos_mark     ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_in_lb           ), priority=0    , match=(1), action=(next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=9 (ls_in_stateful     ), priority=0    , match=(1), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=100  , match=(inport == "provnet1-2-physnet1"), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=0    , match=(1), action=(next;)
+  table=11(ls_in_dhcp_options ), priority=0    , match=(1), action=(next;)
+  table=12(ls_in_dhcp_response), priority=0    , match=(1), action=(next;)
+  table=13(ls_in_l2_lkup      ), priority=100  , match=(eth.mcast), action=(outport = "_MC_flood"; output;)
+  table=13(ls_in_l2_lkup      ), priority=50   , match=(eth.dst == 00:00:00:00:00:02), action=(outport = "provnet1-2-port1"; output;)
+  table=13(ls_in_l2_lkup      ), priority=0    , match=(1), action=(outport = "_MC_unknown"; output;)
+Datapath: "provnet1-2" (69d154e5-8f77-43c7-828a-a08f913beae8)  Pipeline: egress
+  table=0 (ls_out_pre_lb      ), priority=0    , match=(1), action=(next;)
+  table=1 (ls_out_pre_acl     ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_out_pre_stateful), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=2 (ls_out_pre_stateful), priority=0    , match=(1), action=(next;)
+  table=3 (ls_out_lb          ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_out_acl         ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_out_qos_mark    ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=6 (ls_out_stateful    ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_out_port_sec_ip ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_out_port_sec_l2 ), priority=100  , match=(eth.mcast), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-2-physnet1"), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-2-port1" && eth.dst == {00:00:00:00:00:02}), action=(output;)
+Datapath: "provnet1-1" (817e0c7e-2b8e-40c4-b1db-d255e5cd12b6)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-1-physnet1"), action=(next;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-1-port1" && eth.src == {00:00:00:00:00:01}), action=(next;)
+  table=1 (ls_in_port_sec_ip  ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-1-port1" && eth.src == 00:00:00:00:00:01 && arp.sha == 00:00:00:00:00:01), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-1-port1" && eth.src == 00:00:00:00:00:01 && ip6 && nd && ((nd.sll == 00:00:00:00:00:00 || nd.sll == 00:00:00:00:00:01) || ((nd.tll == 00:00:00:00:00:00 || nd.tll == 00:00:00:00:00:01)))), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=80   , match=(inport == "provnet1-1-port1" && (arp || nd)), action=(drop;)
+  table=2 (ls_in_port_sec_nd  ), priority=0    , match=(1), action=(next;)
+  table=3 (ls_in_pre_acl      ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_in_pre_lb       ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_in_pre_stateful ), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=5 (ls_in_pre_stateful ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_in_acl          ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_in_qos_mark     ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_in_lb           ), priority=0    , match=(1), action=(next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=9 (ls_in_stateful     ), priority=0    , match=(1), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=100  , match=(inport == "provnet1-1-physnet1"), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=0    , match=(1), action=(next;)
+  table=11(ls_in_dhcp_options ), priority=0    , match=(1), action=(next;)
+  table=12(ls_in_dhcp_response), priority=0    , match=(1), action=(next;)
+  table=13(ls_in_l2_lkup      ), priority=100  , match=(eth.mcast), action=(outport = "_MC_flood"; output;)
+  table=13(ls_in_l2_lkup      ), priority=50   , match=(eth.dst == 00:00:00:00:00:01), action=(outport = "provnet1-1-port1"; output;)
+  table=13(ls_in_l2_lkup      ), priority=0    , match=(1), action=(outport = "_MC_unknown"; output;)
+Datapath: "provnet1-1" (817e0c7e-2b8e-40c4-b1db-d255e5cd12b6)  Pipeline: egress
+  table=0 (ls_out_pre_lb      ), priority=0    , match=(1), action=(next;)
+  table=1 (ls_out_pre_acl     ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_out_pre_stateful), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=2 (ls_out_pre_stateful), priority=0    , match=(1), action=(next;)
+  table=3 (ls_out_lb          ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_out_acl         ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_out_qos_mark    ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=6 (ls_out_stateful    ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_out_port_sec_ip ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_out_port_sec_l2 ), priority=100  , match=(eth.mcast), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-1-physnet1"), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-1-port1" && eth.dst == {00:00:00:00:00:01}), action=(output;)
+Datapath: "provnet1-3" (cc918aea-225f-43dd-a56f-b25cd8bf51d5)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-3-physnet1"), action=(next;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-3-port1" && eth.src == {00:00:00:00:00:03}), action=(next;)
+  table=1 (ls_in_port_sec_ip  ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-3-port1" && eth.src == 00:00:00:00:00:03 && arp.sha == 00:00:00:00:00:03), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-3-port1" && eth.src == 00:00:00:00:00:03 && ip6 && nd && ((nd.sll == 00:00:00:00:00:00 || nd.sll == 00:00:00:00:00:03) || ((nd.tll == 00:00:00:00:00:00 || nd.tll == 00:00:00:00:00:03)))), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=80   , match=(inport == "provnet1-3-port1" && (arp || nd)), action=(drop;)
+  table=2 (ls_in_port_sec_nd  ), priority=0    , match=(1), action=(next;)
+  table=3 (ls_in_pre_acl      ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_in_pre_lb       ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_in_pre_stateful ), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=5 (ls_in_pre_stateful ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_in_acl          ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_in_qos_mark     ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_in_lb           ), priority=0    , match=(1), action=(next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=9 (ls_in_stateful     ), priority=0    , match=(1), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=100  , match=(inport == "provnet1-3-physnet1"), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=0    , match=(1), action=(next;)
+  table=11(ls_in_dhcp_options ), priority=0    , match=(1), action=(next;)
+  table=12(ls_in_dhcp_response), priority=0    , match=(1), action=(next;)
+  table=13(ls_in_l2_lkup      ), priority=100  , match=(eth.mcast), action=(outport = "_MC_flood"; output;)
+  table=13(ls_in_l2_lkup      ), priority=50   , match=(eth.dst == 00:00:00:00:00:03), action=(outport = "provnet1-3-port1"; output;)
+  table=13(ls_in_l2_lkup      ), priority=0    , match=(1), action=(outport = "_MC_unknown"; output;)
+Datapath: "provnet1-3" (cc918aea-225f-43dd-a56f-b25cd8bf51d5)  Pipeline: egress
+  table=0 (ls_out_pre_lb      ), priority=0    , match=(1), action=(next;)
+  table=1 (ls_out_pre_acl     ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_out_pre_stateful), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=2 (ls_out_pre_stateful), priority=0    , match=(1), action=(next;)
+  table=3 (ls_out_lb          ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_out_acl         ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_out_qos_mark    ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=6 (ls_out_stateful    ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_out_port_sec_ip ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_out_port_sec_l2 ), priority=100  , match=(eth.mcast), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-3-physnet1"), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-3-port1" && eth.dst == {00:00:00:00:00:03}), action=(output;)
+Datapath: "provnet1-4" (f70f045b-d91a-4045-b278-819686759b46)  Pipeline: ingress
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(eth.src[40]), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=100  , match=(vlan.present), action=(drop;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-4-physnet1"), action=(next;)
+  table=0 (ls_in_port_sec_l2  ), priority=50   , match=(inport == "provnet1-4-port1" && eth.src == {00:00:00:00:00:04}), action=(next;)
+  table=1 (ls_in_port_sec_ip  ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-4-port1" && eth.src == 00:00:00:00:00:04 && arp.sha == 00:00:00:00:00:04), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=90   , match=(inport == "provnet1-4-port1" && eth.src == 00:00:00:00:00:04 && ip6 && nd && ((nd.sll == 00:00:00:00:00:00 || nd.sll == 00:00:00:00:00:04) || ((nd.tll == 00:00:00:00:00:00 || nd.tll == 00:00:00:00:00:04)))), action=(next;)
+  table=2 (ls_in_port_sec_nd  ), priority=80   , match=(inport == "provnet1-4-port1" && (arp || nd)), action=(drop;)
+  table=2 (ls_in_port_sec_nd  ), priority=0    , match=(1), action=(next;)
+  table=3 (ls_in_pre_acl      ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_in_pre_lb       ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_in_pre_stateful ), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=5 (ls_in_pre_stateful ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_in_acl          ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_in_qos_mark     ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_in_lb           ), priority=0    , match=(1), action=(next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=9 (ls_in_stateful     ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=9 (ls_in_stateful     ), priority=0    , match=(1), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=100  , match=(inport == "provnet1-4-physnet1"), action=(next;)
+  table=10(ls_in_arp_rsp      ), priority=0    , match=(1), action=(next;)
+  table=11(ls_in_dhcp_options ), priority=0    , match=(1), action=(next;)
+  table=12(ls_in_dhcp_response), priority=0    , match=(1), action=(next;)
+  table=13(ls_in_l2_lkup      ), priority=100  , match=(eth.mcast), action=(outport = "_MC_flood"; output;)
+  table=13(ls_in_l2_lkup      ), priority=50   , match=(eth.dst == 00:00:00:00:00:04), action=(outport = "provnet1-4-port1"; output;)
+  table=13(ls_in_l2_lkup      ), priority=0    , match=(1), action=(outport = "_MC_unknown"; output;)
+Datapath: "provnet1-4" (f70f045b-d91a-4045-b278-819686759b46)  Pipeline: egress
+  table=0 (ls_out_pre_lb      ), priority=0    , match=(1), action=(next;)
+  table=1 (ls_out_pre_acl     ), priority=0    , match=(1), action=(next;)
+  table=2 (ls_out_pre_stateful), priority=100  , match=(reg0[0] == 1), action=(ct_next;)
+  table=2 (ls_out_pre_stateful), priority=0    , match=(1), action=(next;)
+  table=3 (ls_out_lb          ), priority=0    , match=(1), action=(next;)
+  table=4 (ls_out_acl         ), priority=0    , match=(1), action=(next;)
+  table=5 (ls_out_qos_mark    ), priority=0    , match=(1), action=(next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[1] == 1), action=(ct_commit(ct_label=0/1); next;)
+  table=6 (ls_out_stateful    ), priority=100  , match=(reg0[2] == 1), action=(ct_lb;)
+  table=6 (ls_out_stateful    ), priority=0    , match=(1), action=(next;)
+  table=7 (ls_out_port_sec_ip ), priority=0    , match=(1), action=(next;)
+  table=8 (ls_out_port_sec_l2 ), priority=100  , match=(eth.mcast), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-4-physnet1"), action=(output;)
+  table=8 (ls_out_port_sec_l2 ), priority=50   , match=(outport == "provnet1-4-port1" && eth.dst == {00:00:00:00:00:04}), action=(output;)
+---------------------------ovs-ofctl show br-eth1-------------------------------
+OFPT_FEATURES_REPLY (xid=0x2): dpid:0000aa2b95b38645
+n_tables:254, n_buffers:0
+capabilities: FLOW_STATS TABLE_STATS PORT_STATS QUEUE_STATS ARP_MATCH_IP
+actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_dst mod_nw_src mod_nw_dst mod_nw_tos mod_tp_src mod_tp_dst
+ 3(patch-provnet1-): addr:82:01:0c:5d:9c:cc
      config:     0
      state:      0
      speed: 0 Mbps now, 0 Mbps max
- 18(patch-provnet1-): addr:9e:ff:7d:5f:bb:f4
+ 4(patch-provnet1-): addr:7a:ba:ca:e8:db:72
      config:     0
      state:      0
      speed: 0 Mbps now, 0 Mbps max
@@ -88,24 +282,46 @@ OFPST_PORT_DESC reply (xid=0x2):
      config:     PORT_DOWN
      state:      LINK_DOWN
      speed: 0 Mbps now, 0 Mbps max
+OFPT_GET_CONFIG_REPLY (xid=0x4): frags=normal miss_send_len=0
+---------------------------ovs-ofctl dump-ports-desc br-eth1-------------------------------
 OFPST_PORT_DESC reply (xid=0x2):
- 45(ovn-fakech-0): addr:82:ff:c2:b4:7b:89
+ 3(patch-provnet1-): addr:82:01:0c:5d:9c:cc
      config:     0
      state:      0
      speed: 0 Mbps now, 0 Mbps max
- 46(lport1): addr:00:00:00:00:06:00
-     config:     PORT_DOWN
-     state:      LINK_DOWN
-     speed: 0 Mbps now, 0 Mbps max
- 47(patch-br-int-to): addr:fe:21:c9:ed:84:05
+ 4(patch-provnet1-): addr:7a:ba:ca:e8:db:72
      config:     0
      state:      0
      speed: 0 Mbps now, 0 Mbps max
- 48(lport2): addr:00:00:00:00:06:00
+ LOCAL(br-eth1): addr:aa:2b:95:b3:86:45
      config:     PORT_DOWN
      state:      LINK_DOWN
      speed: 0 Mbps now, 0 Mbps max
- 49(patch-br-int-to): addr:ca:f8:cf:8f:81:94
+---------------------------ovs-ofctl dump-flows br-eth1-------------------------------
+NXST_FLOW reply (xid=0x4):
+ cookie=0x0, duration=2874.788s, table=0, n_packets=5, n_bytes=446, idle_age=0, priority=0 actions=NORMAL
+---------------------------ovs-ofctl show br-int-------------------------------
+OFPT_FEATURES_REPLY (xid=0x2): dpid:0000e2ddf5c05d4f
+n_tables:254, n_buffers:0
+capabilities: FLOW_STATS TABLE_STATS PORT_STATS QUEUE_STATS ARP_MATCH_IP
+actions: output enqueue set_vlan_vid set_vlan_pcp strip_vlan mod_dl_src mod_dl_dst mod_nw_src mod_nw_dst mod_nw_tos mod_tp_src mod_tp_dst
+ 15(ovn-fakech-0): addr:ea:0e:83:26:86:a5
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 16(lport1): addr:00:00:00:00:06:00
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+ 17(patch-br-int-to): addr:12:db:5c:45:ad:75
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 18(lport2): addr:00:00:00:00:06:00
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+ 19(patch-br-int-to): addr:7a:2c:fe:4b:02:43
      config:     0
      state:      0
      speed: 0 Mbps now, 0 Mbps max
@@ -113,51 +329,212 @@ OFPST_PORT_DESC reply (xid=0x2):
      config:     PORT_DOWN
      state:      LINK_DOWN
      speed: 0 Mbps now, 0 Mbps max
+OFPT_GET_CONFIG_REPLY (xid=0x4): frags=normal miss_send_len=0
+---------------------------ovs-ofctl dump-ports-desc br-int-------------------------------
+OFPST_PORT_DESC reply (xid=0x2):
+ 15(ovn-fakech-0): addr:ea:0e:83:26:86:a5
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 16(lport1): addr:00:00:00:00:06:00
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+ 17(patch-br-int-to): addr:12:db:5c:45:ad:75
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ 18(lport2): addr:00:00:00:00:06:00
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+ 19(patch-br-int-to): addr:7a:2c:fe:4b:02:43
+     config:     0
+     state:      0
+     speed: 0 Mbps now, 0 Mbps max
+ LOCAL(br-int): addr:e2:dd:f5:c0:5d:4f
+     config:     PORT_DOWN
+     state:      LINK_DOWN
+     speed: 0 Mbps now, 0 Mbps max
+---------------------------ovs-ofctl dump-flows br-int-------------------------------
+NXST_FLOW reply (xid=0x4):
+ cookie=0x0, duration=0.432s, table=0, n_packets=2, n_bytes=180, idle_age=0, priority=100,in_port=16 actions=load:0x1->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],load:0x25->OXM_OF_METADATA[],load:0x1->NXM_NX_REG14[],resubmit(,16)
+ cookie=0x0, duration=0.237s, table=0, n_packets=1, n_bytes=90, idle_age=0, priority=100,in_port=18 actions=load:0x5->NXM_NX_REG13[],load:0x7->NXM_NX_REG11[],load:0x6->NXM_NX_REG12[],load:0x26->OXM_OF_METADATA[],load:0x1->NXM_NX_REG14[],resubmit(,16)
+ cookie=0x0, duration=0.412s, table=0, n_packets=0, n_bytes=0, idle_age=0, priority=100,in_port=17,dl_vlan=0 actions=strip_vlan,load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],load:0x25->OXM_OF_METADATA[],load:0x2->NXM_NX_REG14[],resubmit(,16)
+ cookie=0x0, duration=0.200s, table=0, n_packets=0, n_bytes=0, idle_age=0, priority=100,in_port=19,dl_vlan=0 actions=strip_vlan,load:0x8->NXM_NX_REG13[],load:0x7->NXM_NX_REG11[],load:0x6->NXM_NX_REG12[],load:0x26->OXM_OF_METADATA[],load:0x2->NXM_NX_REG14[],resubmit(,16)
+ cookie=0x0, duration=0.412s, table=0, n_packets=1, n_bytes=90, idle_age=0, priority=100,in_port=17,vlan_tci=0x0000/0x1000 actions=load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],load:0x25->OXM_OF_METADATA[],load:0x2->NXM_NX_REG14[],resubmit(,16)
+ cookie=0x0, duration=0.200s, table=0, n_packets=1, n_bytes=90, idle_age=0, priority=100,in_port=19,vlan_tci=0x0000/0x1000 actions=load:0x8->NXM_NX_REG13[],load:0x7->NXM_NX_REG11[],load:0x6->NXM_NX_REG12[],load:0x26->OXM_OF_METADATA[],load:0x2->NXM_NX_REG14[],resubmit(,16)
+ cookie=0xdf472e88, duration=0.432s, table=16, n_packets=0, n_bytes=0, idle_age=0, priority=100,metadata=0x25,dl_src=01:00:00:00:00:00/01:00:00:00:00:00 actions=drop
+ cookie=0xb77ede8c, duration=0.226s, table=16, n_packets=0, n_bytes=0, idle_age=0, priority=100,metadata=0x26,dl_src=01:00:00:00:00:00/01:00:00:00:00:00 actions=drop
+ cookie=0x8475b91d, duration=0.432s, table=16, n_packets=0, n_bytes=0, idle_age=0, priority=100,metadata=0x25,vlan_tci=0x1000/0x1000 actions=drop
+ cookie=0xcd109a7, duration=0.226s, table=16, n_packets=0, n_bytes=0, idle_age=0, priority=100,metadata=0x26,vlan_tci=0x1000/0x1000 actions=drop
+ cookie=0xbee7665a, duration=0.432s, table=16, n_packets=1, n_bytes=90, idle_age=0, priority=50,reg14=0x2,metadata=0x25 actions=resubmit(,17)
+ cookie=0xfd48f1, duration=0.227s, table=16, n_packets=1, n_bytes=90, idle_age=0, priority=50,reg14=0x2,metadata=0x26 actions=resubmit(,17)
+ cookie=0x9f7d1a0e, duration=0.423s, table=16, n_packets=2, n_bytes=180, idle_age=0, priority=50,reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01 actions=resubmit(,17)
+ cookie=0x17139a8f, duration=0.227s, table=16, n_packets=1, n_bytes=90, idle_age=0, priority=50,reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:02 actions=resubmit(,17)
+ cookie=0xde8753d7, duration=0.432s, table=17, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,18)
+ cookie=0x6fb83618, duration=0.226s, table=17, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,18)
+ cookie=0x6a72b0e9, duration=0.432s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01,nw_ttl=255,icmp_type=135,icmp_code=0,nd_sll=00:00:00:00:00:00 actions=resubmit(,19)
+ cookie=0x6a72b0e9, duration=0.432s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01,nw_ttl=255,icmp_type=135,icmp_code=0,nd_sll=00:00:00:00:00:01 actions=resubmit(,19)
+ cookie=0x69170fd7, duration=0.227s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:02,nw_ttl=255,icmp_type=135,icmp_code=0,nd_sll=00:00:00:00:00:02 actions=resubmit(,19)
+ cookie=0x69170fd7, duration=0.226s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:02,nw_ttl=255,icmp_type=135,icmp_code=0,nd_sll=00:00:00:00:00:00 actions=resubmit(,19)
+ cookie=0x98e9e86f, duration=0.432s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,arp,reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01,arp_sha=00:00:00:00:00:01 actions=resubmit(,19)
+ cookie=0x42e7f2d7, duration=0.227s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,arp,reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:02,arp_sha=00:00:00:00:00:02 actions=resubmit(,19)
+ cookie=0x6a72b0e9, duration=0.424s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01,nw_ttl=255,icmp_type=136,icmp_code=0,nd_tll=00:00:00:00:00:01 actions=resubmit(,19)
+ cookie=0x6a72b0e9, duration=0.424s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01,nw_ttl=255,icmp_type=136,icmp_code=0,nd_tll=00:00:00:00:00:00 actions=resubmit(,19)
+ cookie=0x69170fd7, duration=0.227s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:02,nw_ttl=255,icmp_type=136,icmp_code=0,nd_tll=00:00:00:00:00:00 actions=resubmit(,19)
+ cookie=0x69170fd7, duration=0.227s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=90,icmp6,reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:02,nw_ttl=255,icmp_type=136,icmp_code=0,nd_tll=00:00:00:00:00:02 actions=resubmit(,19)
+ cookie=0x690cd148, duration=0.432s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=80,icmp6,reg14=0x1,metadata=0x25,nw_ttl=255,icmp_type=135,icmp_code=0 actions=drop
+ cookie=0x690cd148, duration=0.424s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=80,icmp6,reg14=0x1,metadata=0x25,nw_ttl=255,icmp_type=136,icmp_code=0 actions=drop
+ cookie=0x71f7c135, duration=0.227s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=80,icmp6,reg14=0x1,metadata=0x26,nw_ttl=255,icmp_type=136,icmp_code=0 actions=drop
+ cookie=0x71f7c135, duration=0.226s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=80,icmp6,reg14=0x1,metadata=0x26,nw_ttl=255,icmp_type=135,icmp_code=0 actions=drop
+ cookie=0x690cd148, duration=0.423s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=80,arp,reg14=0x1,metadata=0x25 actions=drop
+ cookie=0x71f7c135, duration=0.226s, table=18, n_packets=0, n_bytes=0, idle_age=0, priority=80,arp,reg14=0x1,metadata=0x26 actions=drop
+ cookie=0xb1ef784d, duration=0.432s, table=18, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,19)
+ cookie=0x8084e71d, duration=0.226s, table=18, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,19)
+ cookie=0x7e267d0d, duration=0.432s, table=19, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,20)
+ cookie=0xe4009edf, duration=0.226s, table=19, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,20)
+ cookie=0x717f2689, duration=0.423s, table=20, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,21)
+ cookie=0xe4c6ebff, duration=0.227s, table=20, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,21)
+ cookie=0x1bd67768, duration=0.432s, table=21, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x1/0x1,metadata=0x25 actions=ct(table=22,zone=NXM_NX_REG13[0..15])
+ cookie=0x1bd67768, duration=0.423s, table=21, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x1/0x1,metadata=0x25 actions=ct(table=22,zone=NXM_NX_REG13[0..15])
+ cookie=0x69398686, duration=0.227s, table=21, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x1/0x1,metadata=0x26 actions=ct(table=22,zone=NXM_NX_REG13[0..15])
+ cookie=0x69398686, duration=0.219s, table=21, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x1/0x1,metadata=0x26 actions=ct(table=22,zone=NXM_NX_REG13[0..15])
+ cookie=0xa2ffb462, duration=0.432s, table=21, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,22)
+ cookie=0x6b9c8853, duration=0.226s, table=21, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,22)
+ cookie=0x12d43c5a, duration=0.432s, table=22, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,23)
+ cookie=0x79e762d0, duration=0.227s, table=22, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,23)
+ cookie=0xdeb2741c, duration=0.432s, table=23, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,24)
+ cookie=0x45c75efd, duration=0.226s, table=23, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,24)
+ cookie=0x742e54db, duration=0.424s, table=24, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,25)
+ cookie=0x220ea423, duration=0.226s, table=24, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,25)
+ cookie=0xf7e06d9a, duration=0.432s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x2/0x2,metadata=0x25 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,26)
+ cookie=0xf7e06d9a, duration=0.423s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x2/0x2,metadata=0x25 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,26)
+ cookie=0xf3114650, duration=0.227s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x2/0x2,metadata=0x26 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,26)
+ cookie=0xf3114650, duration=0.226s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x2/0x2,metadata=0x26 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,26)
+ cookie=0xf53a1a78, duration=0.423s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x4/0x4,metadata=0x25 actions=ct(table=26,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0xf53a1a78, duration=0.423s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x4/0x4,metadata=0x25 actions=ct(table=26,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0x1506c6ab, duration=0.227s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x4/0x4,metadata=0x26 actions=ct(table=26,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0x1506c6ab, duration=0.226s, table=25, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x4/0x4,metadata=0x26 actions=ct(table=26,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0xdded40f5, duration=0.424s, table=25, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,26)
+ cookie=0x4298010b, duration=0.226s, table=25, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,26)
+ cookie=0x2e0996a0, duration=0.432s, table=26, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg14=0x2,metadata=0x25 actions=resubmit(,27)
+ cookie=0x8b14852b, duration=0.226s, table=26, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg14=0x2,metadata=0x26 actions=resubmit(,27)
+ cookie=0x22e73c6c, duration=0.424s, table=26, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,27)
+ cookie=0xec51995, duration=0.226s, table=26, n_packets=1, n_bytes=90, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,27)
+ cookie=0xc42eb953, duration=0.432s, table=27, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,28)
+ cookie=0xfe2bb364, duration=0.226s, table=27, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,28)
+ cookie=0x42ec2dc3, duration=0.423s, table=28, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,29)
+ cookie=0x39bba0f4, duration=0.226s, table=28, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,29)
+ cookie=0x4bd7f87, duration=0.432s, table=29, n_packets=3, n_bytes=270, idle_age=0, priority=100,metadata=0x25,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=load:0xffff->NXM_NX_REG15[],resubmit(,32)
+ cookie=0xea0f83e0, duration=0.227s, table=29, n_packets=2, n_bytes=180, idle_age=0, priority=100,metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=load:0xffff->NXM_NX_REG15[],resubmit(,32)
+ cookie=0x2e838ac1, duration=0.432s, table=29, n_packets=0, n_bytes=0, idle_age=0, priority=50,metadata=0x25,dl_dst=00:00:00:00:00:01 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
+ cookie=0xcbc40d6b, duration=0.226s, table=29, n_packets=0, n_bytes=0, idle_age=0, priority=50,metadata=0x26,dl_dst=00:00:00:00:00:02 actions=load:0x1->NXM_NX_REG15[],resubmit(,32)
+ cookie=0x91537e79, duration=0.423s, table=29, n_packets=0, n_bytes=0, idle_age=0, priority=0,metadata=0x25 actions=load:0xfffe->NXM_NX_REG15[],resubmit(,32)
+ cookie=0x23d96f5c, duration=0.226s, table=29, n_packets=0, n_bytes=0, idle_age=0, priority=0,metadata=0x26 actions=load:0xfffe->NXM_NX_REG15[],resubmit(,32)
+ cookie=0x0, duration=2870.905s, table=32, n_packets=0, n_bytes=0, idle_age=2870, priority=150,reg10=0x2/0x2 actions=resubmit(,33)
+ cookie=0x0, duration=2870.905s, table=32, n_packets=9, n_bytes=802, idle_age=0, priority=0 actions=resubmit(,33)
+ cookie=0x0, duration=0.432s, table=33, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg15=0x1,metadata=0x25 actions=load:0x1->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],resubmit(,34)
+ cookie=0x0, duration=0.424s, table=33, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg15=0xfffe,metadata=0x25 actions=load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0xfffe->NXM_NX_REG15[]
+ cookie=0x0, duration=0.424s, table=33, n_packets=3, n_bytes=270, idle_age=0, priority=100,reg15=0xffff,metadata=0x25 actions=load:0x1->NXM_NX_REG13[],load:0x1->NXM_NX_REG15[],resubmit(,34),load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0xffff->NXM_NX_REG15[]
+ cookie=0x0, duration=0.412s, table=33, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg15=0x2,metadata=0x25 actions=load:0x4->NXM_NX_REG13[],load:0x2->NXM_NX_REG11[],load:0x3->NXM_NX_REG12[],resubmit(,34)
+ cookie=0x0, duration=0.237s, table=33, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg15=0x1,metadata=0x26 actions=load:0x5->NXM_NX_REG13[],load:0x7->NXM_NX_REG11[],load:0x6->NXM_NX_REG12[],resubmit(,34)
+ cookie=0x0, duration=0.227s, table=33, n_packets=2, n_bytes=180, idle_age=0, priority=100,reg15=0xffff,metadata=0x26 actions=load:0x8->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0x5->NXM_NX_REG13[],load:0x1->NXM_NX_REG15[],resubmit(,34),load:0xffff->NXM_NX_REG15[]
+ cookie=0x0, duration=0.226s, table=33, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg15=0xfffe,metadata=0x26 actions=load:0x8->NXM_NX_REG13[],load:0x2->NXM_NX_REG15[],resubmit(,34),load:0xfffe->NXM_NX_REG15[]
+ cookie=0x0, duration=0.200s, table=33, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg15=0x2,metadata=0x26 actions=load:0x8->NXM_NX_REG13[],load:0x7->NXM_NX_REG11[],load:0x6->NXM_NX_REG12[],resubmit(,34)
+ cookie=0x0, duration=0.432s, table=34, n_packets=2, n_bytes=180, idle_age=0, priority=100,reg10=0/0x1,reg14=0x1,reg15=0x1,metadata=0x25 actions=drop
+ cookie=0x0, duration=0.412s, table=34, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x25 actions=drop
+ cookie=0x0, duration=0.237s, table=34, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg10=0/0x1,reg14=0x1,reg15=0x1,metadata=0x26 actions=drop
+ cookie=0x0, duration=0.200s, table=34, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x26 actions=drop
+ cookie=0x0, duration=2870.905s, table=34, n_packets=9, n_bytes=802, idle_age=0, priority=0 actions=load:0->NXM_NX_REG0[],load:0->NXM_NX_REG1[],load:0->NXM_NX_REG2[],load:0->NXM_NX_REG3[],load:0->NXM_NX_REG4[],load:0->NXM_NX_REG5[],load:0->NXM_NX_REG6[],load:0->NXM_NX_REG7[],load:0->NXM_NX_REG8[],load:0->NXM_NX_REG9[],resubmit(,48)
+ cookie=0xb0448ddb, duration=0.423s, table=48, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,49)
+ cookie=0x33038124, duration=0.226s, table=48, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,49)
+ cookie=0xd7909357, duration=0.424s, table=49, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,50)
+ cookie=0xb884d613, duration=0.226s, table=49, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,50)
+ cookie=0xbb8d7ad1, duration=0.432s, table=50, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x1/0x1,metadata=0x25 actions=ct(table=51,zone=NXM_NX_REG13[0..15])
+ cookie=0xbb8d7ad1, duration=0.424s, table=50, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x1/0x1,metadata=0x25 actions=ct(table=51,zone=NXM_NX_REG13[0..15])
+ cookie=0x2371982e, duration=0.226s, table=50, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x1/0x1,metadata=0x26 actions=ct(table=51,zone=NXM_NX_REG13[0..15])
+ cookie=0x2371982e, duration=0.219s, table=50, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x1/0x1,metadata=0x26 actions=ct(table=51,zone=NXM_NX_REG13[0..15])
+ cookie=0x6b47b6f0, duration=0.423s, table=50, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,51)
+ cookie=0x8978513d, duration=0.226s, table=50, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,51)
+ cookie=0x556450fd, duration=0.423s, table=51, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,52)
+ cookie=0xda2dc099, duration=0.227s, table=51, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,52)
+ cookie=0xabc0f2fb, duration=0.432s, table=52, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,53)
+ cookie=0xff9f0ce3, duration=0.226s, table=52, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,53)
+ cookie=0x3421023d, duration=0.423s, table=53, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,54)
+ cookie=0x79428cc4, duration=0.227s, table=53, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,54)
+ cookie=0x37db9027, duration=0.424s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x2/0x2,metadata=0x25 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,55)
+ cookie=0x37db9027, duration=0.423s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x2/0x2,metadata=0x25 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,55)
+ cookie=0xf2cc8d67, duration=0.226s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x2/0x2,metadata=0x26 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,55)
+ cookie=0xf2cc8d67, duration=0.226s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x2/0x2,metadata=0x26 actions=ct(commit,zone=NXM_NX_REG13[0..15],exec(load:0->NXM_NX_CT_LABEL[0])),resubmit(,55)
+ cookie=0xb3ac01a3, duration=0.424s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x4/0x4,metadata=0x25 actions=ct(table=55,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0xb3ac01a3, duration=0.424s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x4/0x4,metadata=0x25 actions=ct(table=55,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0xb6f743e8, duration=0.226s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ip,reg0=0x4/0x4,metadata=0x26 actions=ct(table=55,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0xb6f743e8, duration=0.219s, table=54, n_packets=0, n_bytes=0, idle_age=0, priority=100,ipv6,reg0=0x4/0x4,metadata=0x26 actions=ct(table=55,zone=NXM_NX_REG13[0..15],nat)
+ cookie=0x5bd66a60, duration=0.432s, table=54, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,55)
+ cookie=0x5c72e21b, duration=0.226s, table=54, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,55)
+ cookie=0xf26a9c, duration=0.432s, table=55, n_packets=3, n_bytes=270, idle_age=0, priority=0,metadata=0x25 actions=resubmit(,56)
+ cookie=0x6da5922a, duration=0.219s, table=55, n_packets=2, n_bytes=180, idle_age=0, priority=0,metadata=0x26 actions=resubmit(,56)
+ cookie=0xe3c672cb, duration=0.432s, table=56, n_packets=3, n_bytes=270, idle_age=0, priority=100,metadata=0x25,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,64)
+ cookie=0xb794e028, duration=0.227s, table=56, n_packets=2, n_bytes=180, idle_age=0, priority=100,metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00 actions=resubmit(,64)
+ cookie=0x609340d, duration=0.432s, table=56, n_packets=0, n_bytes=0, idle_age=0, priority=50,reg15=0x2,metadata=0x25 actions=resubmit(,64)
+ cookie=0xda307036, duration=0.226s, table=56, n_packets=0, n_bytes=0, idle_age=0, priority=50,reg15=0x2,metadata=0x26 actions=resubmit(,64)
+ cookie=0x5be77ccf, duration=0.424s, table=56, n_packets=0, n_bytes=0, idle_age=0, priority=50,reg15=0x1,metadata=0x25,dl_dst=00:00:00:00:00:01 actions=resubmit(,64)
+ cookie=0x209c500a, duration=0.227s, table=56, n_packets=0, n_bytes=0, idle_age=0, priority=50,reg15=0x1,metadata=0x26,dl_dst=00:00:00:00:00:02 actions=resubmit(,64)
+ cookie=0x0, duration=0.433s, table=64, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x25 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
+ cookie=0x0, duration=0.412s, table=64, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x25 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
+ cookie=0x0, duration=0.237s, table=64, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg10=0x1/0x1,reg15=0x1,metadata=0x26 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
+ cookie=0x0, duration=0.201s, table=64, n_packets=0, n_bytes=0, idle_age=0, priority=100,reg10=0x1/0x1,reg15=0x2,metadata=0x26 actions=push:NXM_OF_IN_PORT[],load:0->NXM_OF_IN_PORT[],resubmit(,65),pop:NXM_OF_IN_PORT[]
+ cookie=0x0, duration=2870.905s, table=64, n_packets=9, n_bytes=802, idle_age=0, priority=0 actions=resubmit(,65)
+ cookie=0x0, duration=0.432s, table=65, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg15=0x1,metadata=0x25 actions=output:16
+ cookie=0x0, duration=0.412s, table=65, n_packets=2, n_bytes=180, idle_age=0, priority=100,reg15=0x2,metadata=0x25 actions=output:17
+ cookie=0x0, duration=0.237s, table=65, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg15=0x1,metadata=0x26 actions=output:18
+ cookie=0x0, duration=0.200s, table=65, n_packets=1, n_bytes=90, idle_age=0, priority=100,reg15=0x2,metadata=0x26 actions=output:19
 ---------------------------Start-TEST-------------------------------
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
-Flow: in_port=46,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
+Flow: in_port=16,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
 
 bridge("br-int")
 ----------------
- 0. in_port=46, priority 100
+ 0. in_port=16, priority 100
     set_field:0x1->reg13
-    set_field:0x3->reg11
-    set_field:0x2->reg12
-    set_field:0x26->metadata
+    set_field:0x2->reg11
+    set_field:0x3->reg12
+    set_field:0x25->metadata
     set_field:0x1->reg14
     resubmit(,16)
-16. reg14=0x1,metadata=0x26,dl_src=00:00:00:00:00:01, priority 50, cookie 0x94189673
+16. reg14=0x1,metadata=0x25,dl_src=00:00:00:00:00:01, priority 50, cookie 0x9f7d1a0e
     resubmit(,17)
-17. metadata=0x26, priority 0, cookie 0x93fdf6eb
+17. metadata=0x25, priority 0, cookie 0xde8753d7
     resubmit(,18)
-18. metadata=0x26, priority 0, cookie 0x4a282756
+18. metadata=0x25, priority 0, cookie 0xb1ef784d
     resubmit(,19)
-19. metadata=0x26, priority 0, cookie 0xa9743d98
+19. metadata=0x25, priority 0, cookie 0x7e267d0d
     resubmit(,20)
-20. metadata=0x26, priority 0, cookie 0x515da4ad
+20. metadata=0x25, priority 0, cookie 0x717f2689
     resubmit(,21)
-21. metadata=0x26, priority 0, cookie 0xd6d9bd2e
+21. metadata=0x25, priority 0, cookie 0xa2ffb462
     resubmit(,22)
-22. metadata=0x26, priority 0, cookie 0xcd60eca
+22. metadata=0x25, priority 0, cookie 0x12d43c5a
     resubmit(,23)
-23. metadata=0x26, priority 0, cookie 0xb4dc8145
+23. metadata=0x25, priority 0, cookie 0xdeb2741c
     resubmit(,24)
-24. metadata=0x26, priority 0, cookie 0xdae3480
+24. metadata=0x25, priority 0, cookie 0x742e54db
     resubmit(,25)
-25. metadata=0x26, priority 0, cookie 0xd3ab263a
+25. metadata=0x25, priority 0, cookie 0xdded40f5
     resubmit(,26)
-26. metadata=0x26, priority 0, cookie 0xae5a3877
+26. metadata=0x25, priority 0, cookie 0x22e73c6c
     resubmit(,27)
-27. metadata=0x26, priority 0, cookie 0x6395b9ee
+27. metadata=0x25, priority 0, cookie 0xc42eb953
     resubmit(,28)
-28. metadata=0x26, priority 0, cookie 0xfec413c1
+28. metadata=0x25, priority 0, cookie 0x42ec2dc3
     resubmit(,29)
-29. metadata=0x26, priority 0, cookie 0x5d4378ab
+29. metadata=0x25, priority 0, cookie 0x91537e79
     set_field:0xfffe->reg15
     resubmit(,32)
 32. priority 0
     resubmit(,33)
-33. reg15=0xfffe,metadata=0x26, priority 100
+33. reg15=0xfffe,metadata=0x25, priority 100
     set_field:0x4->reg13
     set_field:0x2->reg15
     resubmit(,34)
@@ -173,28 +550,28 @@ bridge("br-int")
             set_field:0->reg8
             set_field:0->reg9
             resubmit(,48)
-        48. metadata=0x26, priority 0, cookie 0xe19ec3f2
+        48. metadata=0x25, priority 0, cookie 0xb0448ddb
             resubmit(,49)
-        49. metadata=0x26, priority 0, cookie 0xd20a4cbf
+        49. metadata=0x25, priority 0, cookie 0xd7909357
             resubmit(,50)
-        50. metadata=0x26, priority 0, cookie 0xf0fc932e
+        50. metadata=0x25, priority 0, cookie 0x6b47b6f0
             resubmit(,51)
-        51. metadata=0x26, priority 0, cookie 0xeaa15381
+        51. metadata=0x25, priority 0, cookie 0x556450fd
             resubmit(,52)
-        52. metadata=0x26, priority 0, cookie 0xc080ac1a
+        52. metadata=0x25, priority 0, cookie 0xabc0f2fb
             resubmit(,53)
-        53. metadata=0x26, priority 0, cookie 0x7b23cb17
+        53. metadata=0x25, priority 0, cookie 0x3421023d
             resubmit(,54)
-        54. metadata=0x26, priority 0, cookie 0xafe62373
+        54. metadata=0x25, priority 0, cookie 0x5bd66a60
             resubmit(,55)
-        55. metadata=0x26, priority 0, cookie 0xf852c742
+        55. metadata=0x25, priority 0, cookie 0xf26a9c
             resubmit(,56)
-        56. reg15=0x2,metadata=0x26, priority 50, cookie 0x20c06f86
+        56. reg15=0x2,metadata=0x25, priority 50, cookie 0x609340d
             resubmit(,64)
         64. priority 0
             resubmit(,65)
-        65. reg15=0x2,metadata=0x26, priority 100
-            output:47
+        65. reg15=0x2,metadata=0x25, priority 100
+            output:17
 
         bridge("br-eth1")
         -----------------
@@ -204,48 +581,48 @@ bridge("br-int")
 
         bridge("br-int")
         ----------------
-         0. in_port=49,vlan_tci=0x0000/0x1000, priority 100
+         0. in_port=19,vlan_tci=0x0000/0x1000, priority 100
             set_field:0x8->reg13
-            set_field:0x6->reg11
-            set_field:0x7->reg12
-            set_field:0x27->metadata
+            set_field:0x7->reg11
+            set_field:0x6->reg12
+            set_field:0x26->metadata
             set_field:0x2->reg14
             resubmit(,16)
-        16. reg14=0x2,metadata=0x27, priority 50, cookie 0xd56b99ef
+        16. reg14=0x2,metadata=0x26, priority 50, cookie 0xfd48f1
             resubmit(,17)
-        17. metadata=0x27, priority 0, cookie 0xac3ae494
+        17. metadata=0x26, priority 0, cookie 0x6fb83618
             resubmit(,18)
-        18. metadata=0x27, priority 0, cookie 0xaab2c1ca
+        18. metadata=0x26, priority 0, cookie 0x8084e71d
             resubmit(,19)
-        19. metadata=0x27, priority 0, cookie 0xe9f24dcd
+        19. metadata=0x26, priority 0, cookie 0xe4009edf
             resubmit(,20)
-        20. metadata=0x27, priority 0, cookie 0xf3c4d058
+        20. metadata=0x26, priority 0, cookie 0xe4c6ebff
             resubmit(,21)
-        21. metadata=0x27, priority 0, cookie 0x952c6a20
+        21. metadata=0x26, priority 0, cookie 0x6b9c8853
             resubmit(,22)
-        22. metadata=0x27, priority 0, cookie 0x505946d9
+        22. metadata=0x26, priority 0, cookie 0x79e762d0
             resubmit(,23)
-        23. metadata=0x27, priority 0, cookie 0xda3f1299
+        23. metadata=0x26, priority 0, cookie 0x45c75efd
             resubmit(,24)
-        24. metadata=0x27, priority 0, cookie 0x242427f4
+        24. metadata=0x26, priority 0, cookie 0x220ea423
             resubmit(,25)
-        25. metadata=0x27, priority 0, cookie 0x37df56a5
+        25. metadata=0x26, priority 0, cookie 0x4298010b
             resubmit(,26)
-        26. reg14=0x2,metadata=0x27, priority 100, cookie 0xee8731c8
+        26. reg14=0x2,metadata=0x26, priority 100, cookie 0x8b14852b
             resubmit(,27)
-        27. metadata=0x27, priority 0, cookie 0xedc7fc3a
+        27. metadata=0x26, priority 0, cookie 0xfe2bb364
             resubmit(,28)
-        28. metadata=0x27, priority 0, cookie 0xf13c9f80
+        28. metadata=0x26, priority 0, cookie 0x39bba0f4
             resubmit(,29)
-        29. metadata=0x27,dl_dst=00:00:00:00:00:02, priority 50, cookie 0x7fc98a2b
+        29. metadata=0x26,dl_dst=00:00:00:00:00:02, priority 50, cookie 0xcbc40d6b
             set_field:0x1->reg15
             resubmit(,32)
         32. priority 0
             resubmit(,33)
-        33. reg15=0x1,metadata=0x27, priority 100
+        33. reg15=0x1,metadata=0x26, priority 100
             set_field:0x5->reg13
-            set_field:0x6->reg11
-            set_field:0x7->reg12
+            set_field:0x7->reg11
+            set_field:0x6->reg12
             resubmit(,34)
         34. priority 0
             set_field:0->reg0
@@ -259,35 +636,35 @@ bridge("br-int")
             set_field:0->reg8
             set_field:0->reg9
             resubmit(,48)
-        48. metadata=0x27, priority 0, cookie 0x6a5c8556
+        48. metadata=0x26, priority 0, cookie 0x33038124
             resubmit(,49)
-        49. metadata=0x27, priority 0, cookie 0x824cf7ff
+        49. metadata=0x26, priority 0, cookie 0xb884d613
             resubmit(,50)
-        50. metadata=0x27, priority 0, cookie 0x5c6a425e
+        50. metadata=0x26, priority 0, cookie 0x8978513d
             resubmit(,51)
-        51. metadata=0x27, priority 0, cookie 0x2389c66b
+        51. metadata=0x26, priority 0, cookie 0xda2dc099
             resubmit(,52)
-        52. metadata=0x27, priority 0, cookie 0x19ec7805
+        52. metadata=0x26, priority 0, cookie 0xff9f0ce3
             resubmit(,53)
-        53. metadata=0x27, priority 0, cookie 0xb6fc53d5
+        53. metadata=0x26, priority 0, cookie 0x79428cc4
             resubmit(,54)
-        54. metadata=0x27, priority 0, cookie 0x83acc06c
+        54. metadata=0x26, priority 0, cookie 0x5c72e21b
             resubmit(,55)
-        55. metadata=0x27, priority 0, cookie 0xd7a81eae
+        55. metadata=0x26, priority 0, cookie 0x6da5922a
             resubmit(,56)
-        56. reg15=0x1,metadata=0x27,dl_dst=00:00:00:00:00:02, priority 50, cookie 0xd3ce43f3
+        56. reg15=0x1,metadata=0x26,dl_dst=00:00:00:00:00:02, priority 50, cookie 0x209c500a
             resubmit(,64)
         64. priority 0
             resubmit(,65)
-        65. reg15=0x1,metadata=0x27, priority 100
-            output:48
+        65. reg15=0x1,metadata=0x26, priority 100
+            output:18
     set_field:0xfffe->reg15
 
-Final flow: reg11=0x3,reg12=0x2,reg13=0x4,reg14=0x1,reg15=0xfffe,metadata=0x26,in_port=46,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
-Megaflow: recirc_id=0,in_port=46,vlan_tci=0x0000/0x1fff,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
+Final flow: reg11=0x2,reg12=0x3,reg13=0x4,reg14=0x1,reg15=0xfffe,metadata=0x25,in_port=16,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
+Megaflow: recirc_id=0,in_port=16,vlan_tci=0x0000/0x1fff,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:02,dl_type=0x0000
 Datapath actions: 5
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
-Flow: in_port=17,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:03,dl_type=0x0000
+Flow: in_port=3,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=00:00:00:00:00:03,dl_type=0x0000
 
 bridge("br-int")
 ----------------
@@ -295,7 +672,7 @@ bridge("br-int")
     drop
 
 Final flow: unchanged
-Megaflow: recirc_id=0,in_port=17,dl_type=0x0000
+Megaflow: recirc_id=0,in_port=3,dl_type=0x0000
 Datapath actions: drop
 ++++++++++++++++++++++++++++++++++++++++++++++++++++
 Flow: in_port=2,vlan_tci=0x0000,dl_src=00:00:00:00:00:01,dl_dst=ff:ff:ff:ff:ff:ff,dl_type=0x0000
@@ -320,50 +697,45 @@ bridge("br-eth1")
 
     bridge("br-int")
     ----------------
-         0. in_port=47,vlan_tci=0x0000/0x1000, priority 100
+         0. in_port=17,vlan_tci=0x0000/0x1000, priority 100
             set_field:0x4->reg13
-            set_field:0x3->reg11
-            set_field:0x2->reg12
-            set_field:0x26->metadata
+            set_field:0x2->reg11
+            set_field:0x3->reg12
+            set_field:0x25->metadata
             set_field:0x2->reg14
             resubmit(,16)
-        16. reg14=0x2,metadata=0x26, priority 50, cookie 0x5ab003b2
+        16. reg14=0x2,metadata=0x25, priority 50, cookie 0xbee7665a
             resubmit(,17)
-        17. metadata=0x26, priority 0, cookie 0x93fdf6eb
+        17. metadata=0x25, priority 0, cookie 0xde8753d7
             resubmit(,18)
-        18. metadata=0x26, priority 0, cookie 0x4a282756
+        18. metadata=0x25, priority 0, cookie 0xb1ef784d
             resubmit(,19)
-        19. metadata=0x26, priority 0, cookie 0xa9743d98
+        19. metadata=0x25, priority 0, cookie 0x7e267d0d
             resubmit(,20)
-        20. metadata=0x26, priority 0, cookie 0x515da4ad
+        20. metadata=0x25, priority 0, cookie 0x717f2689
             resubmit(,21)
-        21. metadata=0x26, priority 0, cookie 0xd6d9bd2e
+        21. metadata=0x25, priority 0, cookie 0xa2ffb462
             resubmit(,22)
-        22. metadata=0x26, priority 0, cookie 0xcd60eca
+        22. metadata=0x25, priority 0, cookie 0x12d43c5a
             resubmit(,23)
-        23. metadata=0x26, priority 0, cookie 0xb4dc8145
+        23. metadata=0x25, priority 0, cookie 0xdeb2741c
             resubmit(,24)
-        24. metadata=0x26, priority 0, cookie 0xdae3480
+        24. metadata=0x25, priority 0, cookie 0x742e54db
             resubmit(,25)
-        25. metadata=0x26, priority 0, cookie 0xd3ab263a
+        25. metadata=0x25, priority 0, cookie 0xdded40f5
             resubmit(,26)
-        26. reg14=0x2,metadata=0x26, priority 100, cookie 0x161732a9
+        26. reg14=0x2,metadata=0x25, priority 100, cookie 0x2e0996a0
             resubmit(,27)
-        27. metadata=0x26, priority 0, cookie 0x6395b9ee
+        27. metadata=0x25, priority 0, cookie 0xc42eb953
             resubmit(,28)
-        28. metadata=0x26, priority 0, cookie 0xfec413c1
+        28. metadata=0x25, priority 0, cookie 0x42ec2dc3
             resubmit(,29)
-        29. metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x465020a0
+        29. metadata=0x25,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x4bd7f87
             set_field:0xffff->reg15
             resubmit(,32)
         32. priority 0
             resubmit(,33)
-        33. reg15=0xffff,metadata=0x26, priority 100
-            set_field:0x4->reg13
-            set_field:0x2->reg15
-            resubmit(,34)
-            34. reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x26, priority 100
-                    drop
+        33. reg15=0xffff,metadata=0x25, priority 100
             set_field:0x1->reg13
             set_field:0x1->reg15
             resubmit(,34)
@@ -379,75 +751,80 @@ bridge("br-eth1")
                     set_field:0->reg8
                     set_field:0->reg9
                     resubmit(,48)
-                48. metadata=0x26, priority 0, cookie 0xe19ec3f2
+                48. metadata=0x25, priority 0, cookie 0xb0448ddb
                     resubmit(,49)
-                49. metadata=0x26, priority 0, cookie 0xd20a4cbf
+                49. metadata=0x25, priority 0, cookie 0xd7909357
                     resubmit(,50)
-                50. metadata=0x26, priority 0, cookie 0xf0fc932e
+                50. metadata=0x25, priority 0, cookie 0x6b47b6f0
                     resubmit(,51)
-                51. metadata=0x26, priority 0, cookie 0xeaa15381
+                51. metadata=0x25, priority 0, cookie 0x556450fd
                     resubmit(,52)
-                52. metadata=0x26, priority 0, cookie 0xc080ac1a
+                52. metadata=0x25, priority 0, cookie 0xabc0f2fb
                     resubmit(,53)
-                53. metadata=0x26, priority 0, cookie 0x7b23cb17
+                53. metadata=0x25, priority 0, cookie 0x3421023d
                     resubmit(,54)
-                54. metadata=0x26, priority 0, cookie 0xafe62373
+                54. metadata=0x25, priority 0, cookie 0x5bd66a60
                     resubmit(,55)
-                55. metadata=0x26, priority 0, cookie 0xf852c742
+                55. metadata=0x25, priority 0, cookie 0xf26a9c
                     resubmit(,56)
-                56. metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x37a09910
+                56. metadata=0x25,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0xe3c672cb
                     resubmit(,64)
                 64. priority 0
                     resubmit(,65)
-                65. reg15=0x1,metadata=0x26, priority 100
-                    output:46
+                65. reg15=0x1,metadata=0x25, priority 100
+                    output:16
+            set_field:0x4->reg13
+            set_field:0x2->reg15
+            resubmit(,34)
+            34. reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x25, priority 100
+                    drop
             set_field:0xffff->reg15
 
 bridge("br-int")
 ----------------
- 0. in_port=49,vlan_tci=0x0000/0x1000, priority 100
+ 0. in_port=19,vlan_tci=0x0000/0x1000, priority 100
     set_field:0x8->reg13
-    set_field:0x6->reg11
-    set_field:0x7->reg12
-    set_field:0x27->metadata
+    set_field:0x7->reg11
+    set_field:0x6->reg12
+    set_field:0x26->metadata
     set_field:0x2->reg14
     resubmit(,16)
-16. reg14=0x2,metadata=0x27, priority 50, cookie 0xd56b99ef
+16. reg14=0x2,metadata=0x26, priority 50, cookie 0xfd48f1
     resubmit(,17)
-17. metadata=0x27, priority 0, cookie 0xac3ae494
+17. metadata=0x26, priority 0, cookie 0x6fb83618
     resubmit(,18)
-18. metadata=0x27, priority 0, cookie 0xaab2c1ca
+18. metadata=0x26, priority 0, cookie 0x8084e71d
     resubmit(,19)
-19. metadata=0x27, priority 0, cookie 0xe9f24dcd
+19. metadata=0x26, priority 0, cookie 0xe4009edf
     resubmit(,20)
-20. metadata=0x27, priority 0, cookie 0xf3c4d058
+20. metadata=0x26, priority 0, cookie 0xe4c6ebff
     resubmit(,21)
-21. metadata=0x27, priority 0, cookie 0x952c6a20
+21. metadata=0x26, priority 0, cookie 0x6b9c8853
     resubmit(,22)
-22. metadata=0x27, priority 0, cookie 0x505946d9
+22. metadata=0x26, priority 0, cookie 0x79e762d0
     resubmit(,23)
-23. metadata=0x27, priority 0, cookie 0xda3f1299
+23. metadata=0x26, priority 0, cookie 0x45c75efd
     resubmit(,24)
-24. metadata=0x27, priority 0, cookie 0x242427f4
+24. metadata=0x26, priority 0, cookie 0x220ea423
     resubmit(,25)
-25. metadata=0x27, priority 0, cookie 0x37df56a5
+25. metadata=0x26, priority 0, cookie 0x4298010b
     resubmit(,26)
-26. reg14=0x2,metadata=0x27, priority 100, cookie 0xee8731c8
+26. reg14=0x2,metadata=0x26, priority 100, cookie 0x8b14852b
     resubmit(,27)
-27. metadata=0x27, priority 0, cookie 0xedc7fc3a
+27. metadata=0x26, priority 0, cookie 0xfe2bb364
     resubmit(,28)
-28. metadata=0x27, priority 0, cookie 0xf13c9f80
+28. metadata=0x26, priority 0, cookie 0x39bba0f4
     resubmit(,29)
-29. metadata=0x27,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0x25c54723
+29. metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0xea0f83e0
     set_field:0xffff->reg15
     resubmit(,32)
 32. priority 0
     resubmit(,33)
-33. reg15=0xffff,metadata=0x27, priority 100
+33. reg15=0xffff,metadata=0x26, priority 100
     set_field:0x8->reg13
     set_field:0x2->reg15
     resubmit(,34)
-    34. reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x27, priority 100
+    34. reg10=0/0x1,reg14=0x2,reg15=0x2,metadata=0x26, priority 100
             drop
     set_field:0x5->reg13
     set_field:0x1->reg15
@@ -464,28 +841,28 @@ bridge("br-int")
             set_field:0->reg8
             set_field:0->reg9
             resubmit(,48)
-        48. metadata=0x27, priority 0, cookie 0x6a5c8556
+        48. metadata=0x26, priority 0, cookie 0x33038124
             resubmit(,49)
-        49. metadata=0x27, priority 0, cookie 0x824cf7ff
+        49. metadata=0x26, priority 0, cookie 0xb884d613
             resubmit(,50)
-        50. metadata=0x27, priority 0, cookie 0x5c6a425e
+        50. metadata=0x26, priority 0, cookie 0x8978513d
             resubmit(,51)
-        51. metadata=0x27, priority 0, cookie 0x2389c66b
+        51. metadata=0x26, priority 0, cookie 0xda2dc099
             resubmit(,52)
-        52. metadata=0x27, priority 0, cookie 0x19ec7805
+        52. metadata=0x26, priority 0, cookie 0xff9f0ce3
             resubmit(,53)
-        53. metadata=0x27, priority 0, cookie 0xb6fc53d5
+        53. metadata=0x26, priority 0, cookie 0x79428cc4
             resubmit(,54)
-        54. metadata=0x27, priority 0, cookie 0x83acc06c
+        54. metadata=0x26, priority 0, cookie 0x5c72e21b
             resubmit(,55)
-        55. metadata=0x27, priority 0, cookie 0xd7a81eae
+        55. metadata=0x26, priority 0, cookie 0x6da5922a
             resubmit(,56)
-        56. metadata=0x27,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0xd4440ef2
+        56. metadata=0x26,dl_dst=01:00:00:00:00:00/01:00:00:00:00:00, priority 100, cookie 0xb794e028
             resubmit(,64)
         64. priority 0
             resubmit(,65)
-        65. reg15=0x1,metadata=0x27, priority 100
-            output:48
+        65. reg15=0x1,metadata=0x26, priority 100
+            output:18
     set_field:0xffff->reg15
 
 Final flow: unchanged

@@ -5,6 +5,7 @@ set -o pipefail
 
 OVN_ROOT=$(dirname "${BASH_SOURCE}")
 source ${OVN_ROOT}/lib/ovn.sh
+source ${OVN_ROOT}/lib/show.sh
 
 cleanup() {
     ovs-vsctl --if-exists del-port br-int lport1
@@ -49,26 +50,17 @@ for n in 1 2 3 4; do
     ovn-nbctl lsp-set-type provnet1-$n-physnet1 localnet
     ovn-nbctl lsp-set-options provnet1-$n-physnet1 network_name=physnet1
 done
-echo '---------------------------Show-ovn-nbctl-------------------------------'
-ovn-nbctl show
 
 # Add ovs ports.
-#ovs-vsctl add-port br-int lport1 -- set interface lport1 type=internal -- set Interface lport1 external_ids:iface-id=provnet1-1-port1
-#ovs-vsctl add-port br-int lport2 -- set interface lport2 type=internal -- set Interface lport2 external_ids:iface-id=provnet1-2-port1
 ovs-add-port-base br-int lport1 provnet1-1-port1
 ovs-add-port-base br-int lport2 provnet1-2-port1
 # Bind to fakechassis.
 ovn-sbctl lsp-bind provnet1-3-port1 fakechassis
 ovn-sbctl lsp-bind provnet1-4-port1 fakechassis
 
-echo '---------------------------Show-ovn-sbctl-------------------------------'
-ovn-sbctl show
-echo '---------------------------Show-ovs-vsctl-------------------------------'
-ovs-vsctl show
-echo '---------------------------dump-ports-desc-------------------------'
-ip netns list
-ovs-ofctl dump-ports-desc br-eth1
-ovs-ofctl dump-ports-desc br-int
+show_dev
+dump_flows
+
 echo '---------------------------Start-TEST-------------------------------'
 # This first trace shows a packet from `provnet1-1-port1` with a destination MAC
 # address of `provnet1-2-port1`.  Despite both of these ports being on the same
